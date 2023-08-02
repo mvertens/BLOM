@@ -19,7 +19,7 @@
 
       SUBROUTINE HAMOCC4BCM(kpie,kpje,kpke,kbnd,kplyear,kplmon,kplday,kldtday,&
                             pdlxp,pdlyp,pddpo,prho,pglat,omask,               &
-                            dust,rivin,ndep,oafx,pi_ph,                            &
+                            dust,rivin,ndep,oafx,pi_ph,                       &
                             pfswr,psicomo,ppao,pfu10,ptho,psao,               &
                             patmco2,pflxco2,pflxdms,patmbromo,pflxbromo)
 !******************************************************************************
@@ -125,9 +125,13 @@
       REAL,    intent(in)  :: psao   (1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd,kpke)
       REAL,    intent(in)  :: patmco2(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
       REAL,    intent(out) :: pflxco2(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
-      REAL,    intent(out) :: pflxdms(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
-      REAL,    intent(in)  :: patmbromo(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
-      REAL,    intent(out) :: pflxbromo(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
+      REAL,    intent(inout) :: pflxdms(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
+      REAL,    intent(in)    :: patmbromo(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
+      REAL,    intent(inout) :: pflxbromo(1-kbnd:kpie+kbnd,1-kbnd:kpje+kbnd)
+
+      ! NOTE - why are some arguments intent(inout)?
+      ! If compute_flxdms is .true. then pflxdms will be computed in carchm.F90 
+      ! If compute_flxdms is .false. then pflxdms is obtained external to blom
 
       INTEGER :: i,j,k,l
       INTEGER :: nspin,it
@@ -266,9 +270,9 @@
       CALL INVENTORY_BGC(kpie,kpje,kpke,pdlxp,pdlyp,pddpo,omask,0)
 #endif
 
-
       CALL CARCHM(kpie,kpje,kpke,kbnd,pdlxp,pdlyp,pddpo,prho,pglat,omask,      &
-                  psicomo,ppao,pfu10,ptho,psao)
+                  psicomo,ppao,pfu10,ptho,psao,&
+                  pflxdms,pflxbromo)
 
 #ifdef PBGC_CK_TIMESTEP   
       IF (mnproc.eq.1) THEN

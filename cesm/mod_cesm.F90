@@ -29,10 +29,14 @@ module mod_cesm
    use mod_xc
    use mod_forcing, only: trxday, srxday, swa, nsf, lip, sop, eva, rnf, rfi, &
                           fmltfz, sfl, ztx, mty, ustarw, slp, abswnd, &
-                          lamult, lasl, ustokes, vstokes, atmco2, atmbrf
+                          lamult, lasl, ustokes, vstokes, atmco2, atmbrf, &
+                          flxdms, flxbrf
    use mod_ben02, only: initai, rdcsic, rdctsf, fnlzai
    use mod_seaice, only: ficem
    use mod_checksum, only: csdiag, chksummsk
+#ifdef HAMOCC
+   use mo_control_bgc, only: do_bgc_aofluxes
+#endif
 
    implicit none
 
@@ -76,7 +80,9 @@ module mod_cesm
       ustokes_da, &      ! u-component of surface Stokes drift [m s-1].
       vstokes_da, &      ! v-component of surface Stokes drift [m s-1].
       atmco2_da, &       ! Atmospheric CO2 concentration [ppm].
-      atmbrf_da          ! Atmospheric bromoform concentration [ppt].
+      atmbrf_da, &       ! Atmospheric bromoform concentration [ppt].
+      flxdms_da, &       ! dms surface flux computed by mediator [kg m-2 s-1]
+      flxbrf_da          ! brf surface flux computed by mediator [kg m-2 s-1]
 
    logical :: &
       smtfrc             ! If true, time smooth CESM forcing fields.
@@ -84,13 +90,18 @@ module mod_cesm
    integer :: &
       l1ci, l2ci         ! Time-level indices for time smoothing of CESM fields.
 
+#ifdef BROMO
+   logical :: do_bromo = .true.
+#else
+   logical :: do_bromo = .false.
+#endif
+
    public :: runid_cesm, runtyp_cesm, ocn_cpl_dt_cesm, nstep_in_cpl, hmlt, &
              frzpot, mltpot, swa_da, nsf_da, hmlt_da, lip_da, sop_da, eva_da, &
              rnf_da, rfi_da, fmltfz_da, sfl_da, ztx_da, mty_da, ustarw_da, &
-             slp_da, abswnd_da, ficem_da, lamult_da, lasl_da, &
+             slp_da, abswnd_da, ficem_da, lamult_da, lasl_da, flxdms_da, flxbrf_da, &
              ustokes_da, vstokes_da, atmco2_da, atmbrf_da, smtfrc, l1ci, l2ci, &
              inicon_cesm, inifrc_cesm, getfrc_cesm
-
 contains
 
    subroutine inicon_cesm
@@ -189,6 +200,16 @@ contains
            vstokes(i, j) = w1*vstokes_da(i, j, l1ci) + w2*vstokes_da(i, j, l2ci)
            atmco2(i, j)  = w1*atmco2_da(i, j, l1ci)  + w2*atmco2_da(i, j, l2ci)
            atmbrf(i, j)  = w1*atmbrf_da(i, j, l1ci)  + w2*atmbrf_da(i, j, l2ci)
+#ifdef HAMOCC
+           if (.not. do_bgc_aofluxes) then
+              ! flxdms is obtained from the mediator
+              flxdms(i, j) = w1*flxdms_da(i, j, l1ci)  + w2*flxdms_da(i, j, l2ci)
+              if (do_bromo) then
+                 ! flxbrf is obtained from the mediator
+                 flxbrf(i, j) = w1*flxbrf_da(i, j, l1ci)  + w2*flxbrf_da(i, j, l2ci)
+              end if
+           end if
+#endif
         enddo
         enddo
         do l = 1, isu(j)
@@ -208,7 +229,7 @@ contains
       call ncfopn('getfrc_cesm.nc', 'w', 'c', 1, iotype)
       call ncdims('x', itdm)
       call ncdims('y', jtdm)
-      call ncdefvar('ustarw_da', 'x y', ndouble, 8) 
+      call ncdefvar('ustarw_da', 'x y', ndouble, 8)
       call ncdefvar('lip_da', 'x y', ndouble, 8)
       call ncdefvar('sop_da', 'x y', ndouble, 8)
       call ncdefvar('eva_da', 'x y', ndouble, 8)
