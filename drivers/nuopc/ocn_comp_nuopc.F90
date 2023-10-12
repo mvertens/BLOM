@@ -56,7 +56,6 @@ module ocn_comp_nuopc
 
    private
 
-   integer, parameter :: cslen = 80  ! Short character string length.
    integer, parameter :: cllen = 265 ! Long character string length.
    character(len=*), parameter :: modname = '(ocn_comp_nuopc)'
    character(len=*), parameter :: u_FILE_u = &
@@ -345,7 +344,7 @@ contains
 
       ! Local variables.
       logical :: isPresent, isSet
-      character(len=cslen) :: cvalue
+      character(len=cllen) :: cvalue
 
       ! Switch to IPDv01 by filtering all other PhaseMap entries
       call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
@@ -385,7 +384,7 @@ contains
       type(ESMF_VM) :: vm
       type(ESMF_TimeInterval) :: timeStep
       integer :: localPet, nthrds, shrlogunit, n
-      character(len=cslen) :: starttype, stdname, cvalue, cname
+      character(len=cllen) :: starttype, stdname, cvalue, cname
       character(len=cllen) :: msg
       logical :: isPresent, isSet, flds_co2a, flds_co2b, flds_co2c
 
@@ -665,7 +664,7 @@ contains
       integer(ESMF_KIND_I4), dimension(:), pointer :: maskMesh(:)
       integer, allocatable, dimension(:) :: gindex
       integer :: n, spatialDim, numOwnedElements, nx_global, ny_global
-      character(len=cslen)  :: cvalue
+      character(len=cllen)  :: cvalue
 
       if (dbug > 5) call ESMF_LogWrite(subname//': called', ESMF_LOGMSG_INFO)
 

@@ -78,8 +78,11 @@ contains
 
       real(r8), dimension(itdm,jtdm) :: tmpg
       integer :: i, j, l, errstat, ncid, dimid, varid
+      logical :: file_exists
 
-      if (mnproc == 1) then
+      INQUIRE(FILE=tdfile, EXIST=file_exists)
+
+      if ((mnproc == 1).and.file_exists) then
          write (lp, '(2a)') ' reading tidal dissipation data from ', &
                             trim(tdfile)
          call flush(lp)
@@ -149,9 +152,9 @@ contains
                    stop '(read_tidaldissip)'
          endif
       endif
-
-      call xcaput(tmpg, twedon, 1)
-
+      if (file_exists) then
+          call xcaput(tmpg, twedon, 1)
+      endif
       ! Change units from [W s m-2 = kg s-2] to [g s-2].
    !$omp parallel do private(l, i)
       do j = 1, jj
