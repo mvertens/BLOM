@@ -1,5 +1,5 @@
 ! ------------------------------------------------------------------------------
-! Copyright (C) 2009-2020 Mats Bentsen
+! Copyright (C) 2009-2024 Mats Bentsen, Mariana Vertenstein
 !
 ! This file is part of BLOM.
 !
@@ -18,126 +18,126 @@
 ! ------------------------------------------------------------------------------
 
 module mod_chkvar
-! ------------------------------------------------------------------------------
-! This module contains variables and procedures related to tidal wave energy
-! dissipation.
-! ------------------------------------------------------------------------------
+  ! ------------------------------------------------------------------------------
+  ! This module contains variables and procedures related to tidal wave energy
+  ! dissipation.
+  ! ------------------------------------------------------------------------------
 
-   use mod_types, only: r8
-   use mod_xc
-   use mod_state, only: dp, temp, saln
+  use mod_types, only: r8
+  use mod_xc
+  use mod_state, only: dp, temp, saln
 
-   implicit none
+  implicit none
 
-   private
+  private
 
-   public :: chkvar
-   
+  public :: chkvar
+
 contains
 
-   ! ---------------------------------------------------------------------------
-   ! Private procedures.
-   ! ---------------------------------------------------------------------------
+  ! ---------------------------------------------------------------------------
+  ! Private procedures.
+  ! ---------------------------------------------------------------------------
 
-   pure logical function isnan(a)
-   ! ---------------------------------------------------------------------------
-   ! Check if a real(r8) number is NaN.
-   ! ---------------------------------------------------------------------------
+  pure logical function isnan(a)
+  ! ---------------------------------------------------------------------------
+  ! Check if a real(r8) number is NaN.
+  ! ---------------------------------------------------------------------------
 
-      real(r8), intent(in) :: a 
+    real(r8), intent(in) :: a
 
-      if (a /= a) then 
-         isnan = .true. 
-      else 
-         isnan = .false. 
-      endif 
+    if (a /= a) then
+      isnan = .true.
+    else
+      isnan = .false.
+    endif
 
-   end function isnan
+  end function isnan
 
 
-   pure logical function isinf(a)
-   ! ---------------------------------------------------------------------------
-   ! Check if a real(r8) number is Inf.
-   ! ---------------------------------------------------------------------------
+  pure logical function isinf(a)
+  ! ---------------------------------------------------------------------------
+  ! Check if a real(r8) number is Inf.
+  ! ---------------------------------------------------------------------------
 
-      real(r8), intent(in) :: a 
+    real(r8), intent(in) :: a
 
-      if ((a*0) /= 0) then 
-         isinf = .true. 
-      else 
-         isinf = .false. 
-      endif 
+    if ((a*0) /= 0) then
+      isinf = .true.
+    else
+      isinf = .false.
+    endif
 
-   end function isinf
+  end function isinf
 
-   ! ---------------------------------------------------------------------------
-   ! Public procedures.
-   ! ---------------------------------------------------------------------------
+  ! ---------------------------------------------------------------------------
+  ! Public procedures.
+  ! ---------------------------------------------------------------------------
 
-   subroutine chkvar(m, n, mm, nn, k1m, k1n)
-   ! ---------------------------------------------------------------------------
-   ! Check for NaN of Inf in layer thickness, temperature and salinity
-   ! variables.
-   ! ---------------------------------------------------------------------------
+  subroutine chkvar(m, n, mm, nn, k1m, k1n)
+  ! ---------------------------------------------------------------------------
+  ! Check for NaN of Inf in layer thickness, temperature and salinity
+  ! variables.
+  ! ---------------------------------------------------------------------------
 
-      integer, intent(in) :: m, n, mm, nn, k1m, k1n
+    integer, intent(in) :: m, n, mm, nn, k1m, k1n
 
-      integer :: i, j, k, l, kn
+    integer :: i, j, k, l, kn
 
-   !$omp parallel do private(k, kn, l, i)
-      do j = 1, jj
-         do k = 1, kk
-            kn = k + nn
-            do l = 1, isp(j)
-            do i = max(1, ifp(j, l)), min(ii, ilp(j, l))
-               if (isnan(dp(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: dp is NaN at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-               if (isinf(dp(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: dp is Inf at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-               if (isnan(temp(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: temp is NaN at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-               if (isinf(temp(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: temp is Inf at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-               if (isnan(saln(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: saln is NaN at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-               if (isinf(saln(i, j, kn))) then
-                  write (lp,'(a, i4, a, i4, a, i4, a)') &
-                     ' chkvar: saln is Inf at (i =', i0 + i,', j =', j0 + j, &
-                     ', k =', k,')'
-                 call xchalt('(chkvar') 
-                        stop '(chkvar)'
-               endif
-            enddo
-            enddo
-         enddo
+    !$omp parallel do private(k, kn, l, i)
+    do j = 1, jj
+      do k = 1, kk
+        kn = k + nn
+        do l = 1, isp(j)
+          do i = max(1, ifp(j, l)), min(ii, ilp(j, l))
+            if (isnan(dp(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: dp is NaN at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+            if (isinf(dp(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: dp is Inf at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+            if (isnan(temp(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: temp is NaN at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+            if (isinf(temp(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: temp is Inf at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+            if (isnan(saln(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: saln is NaN at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+            if (isinf(saln(i, j, kn))) then
+              write (lp,'(a, i4, a, i4, a, i4, a)') &
+                   ' chkvar: saln is Inf at (i =', i0 + i,', j =', j0 + j, &
+                   ', k =', k,')'
+              call xchalt('(chkvar')
+              stop '(chkvar)'
+            endif
+          enddo
+        enddo
       enddo
-   !$omp end parallel do
+    enddo
+    !$omp end parallel do
 
-   end subroutine chkvar
+  end subroutine chkvar
 
 end module mod_chkvar

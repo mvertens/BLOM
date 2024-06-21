@@ -1,5 +1,5 @@
 ! ------------------------------------------------------------------------------
-! Copyright (C) 2021-2023 Mats Bentsen, Mehmet Ilicak
+! Copyright (C) 2021-2024 Mats Bentsen, Mehmet Ilicak, Mariana Vertenstein
 !
 ! This file is part of BLOM.
 !
@@ -30,17 +30,17 @@ module mod_vcoord
    use mod_eos,       only: sig, dsigdt, dsigds
    use mod_state,     only: u, v, dp, dpu, dpv, temp, saln, sigma, p, pu, pv
    use mod_hor3map,   only: recon_grd_struct, recon_src_struct, remap_struct, &
-        hor3map_plm, hor3map_ppm, hor3map_pqm, &
-        hor3map_monotonic, hor3map_non_oscillatory, &
-        hor3map_non_oscillatory_posdef, &
-        initialize_rcgs, initialize_rcss, initialize_rms, &
-        prepare_reconstruction, reconstruct, &
-        extract_polycoeff, regrid2, &
-        prepare_remapping, remap, &
-        hor3map_noerr, hor3map_errstr
+                            hor3map_plm, hor3map_ppm, hor3map_pqm, &
+                            hor3map_monotonic, hor3map_non_oscillatory, &
+                            hor3map_non_oscillatory_posdef, &
+                            initialize_rcgs, initialize_rcss, initialize_rms, &
+                            prepare_reconstruction, reconstruct, &
+                            extract_polycoeff, regrid2, &
+                            prepare_remapping, remap, &
+                            hor3map_noerr, hor3map_errstr
    use mod_diffusion, only: ltedtp_opt, ltedtp_neutral, difiso
    use mod_ndiff,     only: ndiff_prep_jslice, ndiff_uflx_jslice, &
-        ndiff_vflx_jslice, ndiff_update_trc_jslice
+                            ndiff_vflx_jslice, ndiff_update_trc_jslice
    use mod_checksum,  only: csdiag, chksummsk
    use mod_tracers,   only: ntr, trc
    use mod_ifdefs,    only: use_TRC
@@ -158,9 +158,9 @@ contains
    end function dpeval1
 
    subroutine prep_recon_jslice(p_src, i_lb, i_ub, j, j_rs, nn)
-      ! ---------------------------------------------------------------------------
-      ! Prepare vertical layer reconstruction along a j-slice of the model data.
-      ! ---------------------------------------------------------------------------
+   ! ---------------------------------------------------------------------------
+   ! Prepare vertical layer reconstruction along a j-slice of the model data.
+   ! ---------------------------------------------------------------------------
 
       real(r8), dimension(:,1-nbdy:), intent(out) :: p_src
       integer, intent(in) :: i_lb, i_ub, j, j_rs, nn
@@ -188,10 +188,10 @@ contains
    end subroutine prep_recon_jslice
 
    subroutine recon_trc_jslice(i_lb, i_ub, j, j_rs, nn)
-      ! ---------------------------------------------------------------------------
-      ! Vertically reconstruct temperature, salinity and additional tracers along a
-      ! j-slice of the model data.
-      ! ---------------------------------------------------------------------------
+   ! ---------------------------------------------------------------------------
+   ! Vertically reconstruct temperature, salinity and additional tracers along a
+   ! j-slice of the model data.
+   ! ---------------------------------------------------------------------------
 
       integer, intent(in) :: i_lb, i_ub, j, j_rs, nn
 
@@ -619,8 +619,8 @@ contains
                   kl = kl + 1
                enddo
                sig_pmin(kt) = ( (p_src(kl+1,i) - pmin(kt))*sig_srcdi(1,kl) &
-                    + (pmin(kt) - p_src(kl,i))*sig_srcdi(2,kl)) &
-                    /(p_src(kl+1,i) - p_src(kl,i))
+                              + (pmin(kt) - p_src(kl,i))*sig_srcdi(2,kl)) &
+                              /(p_src(kl+1,i) - p_src(kl,i))
                if (sigmar_1d(kt) > sig_pmin(kt)) then
                   ktzmin = max(2, kt - dktzu)
                   ktzmax = min(ksmx(i) + 1, kt + dktzl)
@@ -910,69 +910,72 @@ contains
 
       ! Resolve options.
       select case (trim(vcoord_type))
-      case ('isopyc_bulkml')
-         vcoord_type_tag = isopyc_bulkml
-      case ('cntiso_hybrid')
-         vcoord_type_tag = cntiso_hybrid
-      case default
-         if (mnproc == 1) &
-              write (lp,'(3a)') &
-              ' readnml_vcoord: vcoord_type = ', &
-              trim(vcoord_type), ' is unsupported!'
-         call xcstop('(readnml_vcoord)')
-         stop '(readnml_vcoord)'
+        case ('isopyc_bulkml')
+          vcoord_type_tag = isopyc_bulkml
+        case ('cntiso_hybrid')
+          vcoord_type_tag = cntiso_hybrid
+        case default
+          if (mnproc == 1) &
+               write (lp,'(3a)') &
+               ' readnml_vcoord: vcoord_type = ', &
+               trim(vcoord_type), ' is unsupported!'
+          call xcstop('(readnml_vcoord)')
+          stop '(readnml_vcoord)'
+        end select
+        select case (trim(reconstruction_method))
+        case ('plm')
+          reconstruction_method_tag = hor3map_plm
+        case ('ppm')
+          reconstruction_method_tag = hor3map_ppm
+        case ('pqm')
+          reconstruction_method_tag = hor3map_pqm
+        case default
+          if (mnproc == 1) &
+               write (lp,'(3a)') &
+               ' readnml_vcoord: reconstruction_method = ', &
+               trim(reconstruction_method), ' is unsupported!'
+          call xcstop('(readnml_vcoord)')
+          stop '(readnml_vcoord)'
       end select
-      select case (trim(reconstruction_method))
-      case ('plm')
-         reconstruction_method_tag = hor3map_plm
-      case ('ppm')
-         reconstruction_method_tag = hor3map_ppm
-      case ('pqm')
-         reconstruction_method_tag = hor3map_pqm
-      case default
-         if (mnproc == 1) &
-              write (lp,'(3a)') &
-              ' readnml_vcoord: reconstruction_method = ', &
-              trim(reconstruction_method), ' is unsupported!'
-         call xcstop('(readnml_vcoord)')
-         stop '(readnml_vcoord)'
-      end select
+
       select case (trim(density_limiting))
-      case ('monotonic')
-         density_limiting_tag = hor3map_monotonic
-      case default
-         if (mnproc == 1) &
-              write (lp,'(3a)') &
-              ' readnml_vcoord: density_limiting = ', &
-              trim(density_limiting), ' is unsupported!'
-         call xcstop('(readnml_vcoord)')
-         stop '(readnml_vcoord)'
+        case ('monotonic')
+          density_limiting_tag = hor3map_monotonic
+        case default
+          if (mnproc == 1) &
+               write (lp,'(3a)') &
+               ' readnml_vcoord: density_limiting = ', &
+               trim(density_limiting), ' is unsupported!'
+          call xcstop('(readnml_vcoord)')
+          stop '(readnml_vcoord)'
       end select
+
       select case (trim(tracer_limiting))
-      case ('monotonic')
-         tracer_limiting_tag = hor3map_monotonic
-      case ('non_oscillatory')
-         tracer_limiting_tag = hor3map_non_oscillatory
-      case default
-         if (mnproc == 1) &
-              write (lp,'(3a)') &
-              ' readnml_vcoord: tracer_limiting = ', &
-              trim(tracer_limiting), ' is unsupported!'
-         call xcstop('(readnml_vcoord)')
-         stop '(readnml_vcoord)'
+        case ('monotonic')
+          tracer_limiting_tag = hor3map_monotonic
+        case ('non_oscillatory')
+          tracer_limiting_tag = hor3map_non_oscillatory
+        case default
+          if (mnproc == 1) &
+               write (lp,'(3a)') &
+               ' readnml_vcoord: tracer_limiting = ', &
+               trim(tracer_limiting), ' is unsupported!'
+          call xcstop('(readnml_vcoord)')
+          stop '(readnml_vcoord)'
       end select
+
       select case (trim(velocity_limiting))
-      case ('monotonic')
-         velocity_limiting_tag = hor3map_monotonic
-      case ('non_oscillatory')
-         velocity_limiting_tag = hor3map_non_oscillatory
-      case default
-         if (mnproc == 1) &
-              write (lp,'(3a)') &
-              ' readnml_vcoord: velocity_limiting = ', &
-              trim(velocity_limiting), ' is unsupported!'
-         call xcstop('(readnml_vcoord)')
-         stop '(readnml_vcoord)'
+        case ('monotonic')
+          velocity_limiting_tag = hor3map_monotonic
+        case ('non_oscillatory')
+          velocity_limiting_tag = hor3map_non_oscillatory
+        case default
+          if (mnproc == 1) &
+               write (lp,'(3a)') &
+               ' readnml_vcoord: velocity_limiting = ', &
+               trim(velocity_limiting), ' is unsupported!'
+          call xcstop('(readnml_vcoord)')
+          stop '(readnml_vcoord)'
       end select
 
       ! Change units from [m] to [g cm-1 s-2] of depth interval variables.
@@ -1344,7 +1347,7 @@ contains
                   q = min(p(i,j,kk+1), p(i-1,j,kk+1))
                   dpu(i,j,kn) = &
                        .5_r8*( (min(q, p(i-1,j,k+1)) - min(q, p(i-1,j,k))) &
-                       + (min(q, p(i  ,j,k+1)) - min(q, p(i  ,j,k))))
+                             + (min(q, p(i  ,j,k+1)) - min(q, p(i  ,j,k))))
                enddo
             enddo
             do l = 1, isv(j)
@@ -1352,7 +1355,7 @@ contains
                   q = min(p(i,j,kk+1), p(i,j-1,kk+1))
                   dpv(i,j,kn) = &
                        .5_r8*( (min(q, p(i,j-1,k+1)) - min(q, p(i,j-1,k))) &
-                       + (min(q, p(i,j  ,k+1)) - min(q, p(i,j  ,k))))
+                             + (min(q, p(i,j  ,k+1)) - min(q, p(i,j  ,k))))
                enddo
             enddo
          enddo

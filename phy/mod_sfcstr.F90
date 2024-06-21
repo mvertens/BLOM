@@ -1,5 +1,6 @@
 ! ------------------------------------------------------------------------------
-! Copyright (C) 2004-2021 Mats Bentsen, Mehmet Ilicak, Aleksi Nummelin
+! Copyright (C) 2004-2024 Mats Bentsen, Mehmet Ilicak, Aleksi Nummelin,
+!                         Mariana Vertenstein
 !
 ! This file is part of BLOM.
 !
@@ -40,23 +41,23 @@ contains
     integer, intent(in) :: m, n, mm, nn, k1m, k1n
 
     select case (trim(expcnf))
-    case ('cesm')
-      call sfcstr_cesm()
-    case ('ben02clim', 'ben02syn', 'single_column')
-      call sfcstr_ben02()
-    case ('fuk95')
-    case ('channel')
-    case ('isomip1')
-      ! call sfcstr_isomip1(m, n, mm, nn, k1m, k1n)
-    case ('isomip2')
-      ! call sfcstr_isomip2(m, n, mm, nn, k1m, k1n)
-    case default
-      if (mnproc == 1) then
-        write (lp,'(3a)') ' sfcstr: expcnf = ', trim(expcnf), &
-             ' is unsupported!'
-      endif
-      call xcstop('(sfcstr)')
-      stop '(sfcstr)'
+      case ('cesm')
+        call sfcstr_cesm()
+      case ('ben02clim', 'ben02syn', 'single_column')
+        call sfcstr_ben02()
+      case ('fuk95')
+      case ('channel')
+      case ('isomip1')
+        ! call sfcstr_isomip1(m, n, mm, nn, k1m, k1n)
+      case ('isomip2')
+        ! call sfcstr_isomip2(m, n, mm, nn, k1m, k1n)
+      case default
+        if (mnproc == 1) then
+          write (lp,'(3a)') ' sfcstr: expcnf = ', trim(expcnf),&
+               ' is unsupported!'
+        endif
+        call xcstop('(sfcstr)')
+        stop '(sfcstr)'
     end select
 
   end subroutine sfcstr

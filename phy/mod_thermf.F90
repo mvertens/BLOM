@@ -34,32 +34,32 @@ contains
 
   subroutine thermf(m,n,mm,nn,k1m,k1n)
 
-    ! --- ------------------------------------------------------------------
-    ! --- Get surface forcing functions
-    ! --- ------------------------------------------------------------------
+    ! ------------------------------------------------------------------
+    ! Get surface forcing functions
+    ! ------------------------------------------------------------------
 
     ! Arguments
     integer, intent(in) :: m,n,mm,nn,k1m,k1n
 
     select case (trim(expcnf))
-    case ('cesm')
-      call thermf_cesm(m,n,mm,nn,k1m,k1n)
-    case ('ben02clim', 'ben02syn', 'single_column')
-      call thermf_ben02(m,n,mm,nn,k1m,k1n)
-    case ('channel')
-      call thermf_channel(m,n,mm,nn,k1m,k1n)
-    case ('fuk95')
-    case ('isomip1')
-      ! call thermf_isomip1(m,n,mm,nn,k1m,k1n)
-    case ('isomip2')
-      ! call thermf_isomip2(m,n,mm,nn,k1m,k1n)
-    case default
-      if (mnproc == 1) then
-        write (lp,'(3a)') ' thermf: expcnf = ', trim(expcnf), &
-             ' is unsupported!'
-      end if
-      call xcstop('(thermf)')
-      stop '(thermf)'
+      case ('cesm')
+        call thermf_cesm(m,n,mm,nn,k1m,k1n)
+      case ('ben02clim', 'ben02syn', 'single_column')
+        call thermf_ben02(m,n,mm,nn,k1m,k1n)
+      case ('channel')
+        call thermf_channel(m,n,mm,nn,k1m,k1n)
+      case ('fuk95')
+      case ('isomip1')
+        ! call thermf_isomip1(m,n,mm,nn,k1m,k1n)
+      case ('isomip2')
+        ! call thermf_isomip2(m,n,mm,nn,k1m,k1n)
+      case default
+        if (mnproc == 1) then
+          write (lp,'(3a)') ' thermf: expcnf = ', trim(expcnf), &
+               ' is unsupported!'
+        end if
+        call xcstop('(thermf)')
+        stop '(thermf)'
     end select
 
   end subroutine thermf
